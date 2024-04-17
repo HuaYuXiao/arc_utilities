@@ -828,6 +828,16 @@ class VoxelGrid {
 
   inline const BackingStore& GetImmutableRawData() const { return data_; }
 
+  inline const std::vector<T>& GetRawData() const
+  {
+    return data_;
+  }
+
+  inline std::vector<T> CopyRawData() const
+  {
+    return data_;
+  }
+
   inline bool SetRawData(const BackingStore& data) {
     const int64_t expected_length = num_x_cells_ * num_y_cells_ * num_z_cells_;
     if ((int64_t)data.size() == expected_length) {

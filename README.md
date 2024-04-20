@@ -2,3 +2,8 @@
 C++ and Python utilities used in lab projects. From the time before the lab was renamed to ARMLab
 
 [![Build Status](https://travis-ci.com/UM-ARM-Lab/arc_utilities.svg?branch=master)](https://travis-ci.com/UM-ARM-Lab/arc_utilities)
+
+```bash
+catkin_make install --source src/arc_utilities --build build/arc_utilities
+```
+

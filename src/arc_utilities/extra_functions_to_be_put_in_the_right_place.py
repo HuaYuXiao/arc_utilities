@@ -1,3 +1,5 @@
+#!/usr/bin/python2.7
+
 from std_msgs.msg import *
 from geometry_msgs.msg import *
 from color_mapping import *

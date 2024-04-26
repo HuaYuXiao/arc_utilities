@@ -1,21 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(arc_utilities)
 
-set(CMAKE_CXX_STANDARD 14)
-#set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -Wconversion -Werror")
 set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -Wconversion -Werror")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs sensor_msgs geometry_msgs
-        OPTIONAL_COMPONENTS pybind11_catkin rosconsole)
-## System dependencies are found with CMake's conventions
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs sensor_msgs geometry_msgs)
 #find_package(cmake_modules REQUIRED)
 find_package(Eigen3 REQUIRED)
 set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS filesystem)
-find_package(ZLIB)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -43,7 +39,7 @@ catkin_python_setup()
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(INCLUDE_DIRS include LIBRARIES ${PROJECT_NAME} CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs geometry_msgs DEPENDS Eigen3 Boost)
+catkin_package(INCLUDE_DIRS include LIBRARIES ${PROJECT_NAME} CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs geometry_msgs DEPENDS Eigen3)
 
 ###########
 ## Build ##
@@ -51,12 +47,9 @@ catkin_package(INCLUDE_DIRS include LIBRARIES ${PROJECT_NAME} CATKIN_DEPENDS ros
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include
-        SYSTEM
-        ${catkin_INCLUDE_DIRS}
-        ${Eigen3_INCLUDE_DIRS}
+include_directories(include SYSTEM ${catkin_INCLUDE_DIRS} ${Eigen3_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-        ${ZLIB_INCLUDE_DIRS})
+)
 
 # Utility library
 add_library(${PROJECT_NAME}
@@ -99,24 +92,21 @@ add_library(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS}) # ${PROJECT_NAME}_gencpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES}
         ${Boost_LIBRARIES}
-        ${ZLIB_LIBRARIES})
+)
 
 # Simple test node for simple_hierarchical_clustering
 add_executable(test_hierarchical_clustering src/test_hierarchical_clustering.cpp)
 add_dependencies(test_hierarchical_clustering ${PROJECT_NAME} ${catkin_EXPORTED_TARGETS}) # ${PROJECT_NAME}_gencpp)
 target_link_libraries(test_hierarchical_clustering ${PROJECT_NAME} ${catkin_LIBRARIES}
         ${Boost_LIBRARIES}
-        ${ZLIB_LIBRARIES})
+)
 
-  # Simple test node for utility functions
+# Simple test node for utility functions
 add_executable(test_arc_utilities src/test_arc_utilities.cpp)
-add_dependencies(test_arc_utilities ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_arc_utilities ${PROJECT_NAME} ${catkin_LIBRARIES})
-
-# Simple test node for Eigen3 math
-add_executable(test_eigen_math src/test_eigen_math.cpp)
-add_dependencies(test_eigen_math ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_eigen_math ${PROJECT_NAME} ${catkin_LIBRARIES})
+add_dependencies(test_arc_utilities ${PROJECT_NAME} ${catkin_EXPORTED_TARGETS}) # ${PROJECT_NAME}_gencpp)
+target_link_libraries(test_arc_utilities ${PROJECT_NAME} ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
 
 # # Simple test node for Eigen3 math
 # add_executable(test_eigen_math src/test_eigen_math.cpp)
@@ -149,11 +139,16 @@ target_link_libraries(test_eigen_math ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 ## Mark library for installation
 install(TARGETS ${PROJECT_NAME}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#        ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib/
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#        LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib/
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#        RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/lib/
+)
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        PATTERN ".svn" EXCLUDE)
+    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#        DESTINATION ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/
+    PATTERN ".svn" EXCLUDE
+)

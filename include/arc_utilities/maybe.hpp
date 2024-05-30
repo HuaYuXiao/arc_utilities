@@ -1,13 +1,9 @@
 #include <assert.h>
-#include "arc_exceptions.hpp"
 
 #ifndef MAYBE_HPP
 #define MAYBE_HPP
 
-/*
- * NOTE: prefer std::optional
- *
- * Simple implementation of a Maybe/Option type (or monad, if you're into that sort of thing).
+/* Simple implementation of a Maybe/Option type (or monad, if you're into that sort of thing).
  * Allows the safe passing of a value (or lack of a value!) without the need for null values.
  *
  * For example, Maybe<double> stores a double value OR the lack of such value.
@@ -19,58 +15,67 @@
  * Note that both getter functions assert that a valid value is containted!
  *
  */
-namespace Maybe {
-template <typename T>
-class Maybe {
- protected:
-  bool maybe_;
-  T value_;
+namespace Maybe
+{
+    template <typename T>
+    class Maybe
+    {
+    protected:
 
- public:
-  Maybe() : maybe_(false) {}
+        bool maybe_;
+        T value_;
 
-  Maybe(const T& value) : maybe_(true), value_(value) {}
+    public:
 
-  Maybe(T&& value) : maybe_(true), value_(value) {}
+        Maybe() : maybe_(false) {}
 
-  bool Valid() const { return maybe_; }
+        Maybe(const T& value) : maybe_(true), value_(value) {}
 
-  T& Get() {
-    if (!maybe_) {
-      throw_arc_exception(std::invalid_argument, "Maybe has not been initialized");
-    }
-    return value_;
-  }
+        Maybe(T&& value) : maybe_(true), value_(value) {}
 
-  const T& GetImmutable() const {
-    if (!maybe_) {
-      throw_arc_exception(std::invalid_argument, "Maybe has not been initialized");
-    }
-    return value_;
-  }
+        bool Valid() const
+        {
+            return maybe_;
+        }
 
-  void Set(const T& value) {
-    maybe_ = true;
-    value_ = value;
-  }
+        T& Get()
+        {
+            assert(maybe_);
+            return value_;
+        }
 
-  void Set(T&& value) {
-    maybe_ = true;
-    value_ = value;
-  }
+        const T& GetImmutable() const
+        {
+            assert(maybe_);
+            return value_;
+        }
 
-  Maybe& operator=(const T& value) {
-    maybe_ = true;
-    value_ = value;
-    return *this;
-  }
+        void Set(const T& value)
+        {
+            maybe_ = true;
+            value_ = value;
+        }
 
-  Maybe& operator=(T&& value) {
-    maybe_ = true;
-    value_ = value;
-    return *this;
-  }
-};
-}  // namespace Maybe
+        void Set(T&& value)
+        {
+            maybe_ = true;
+            value_ = value;
+        }
 
-#endif  // MAYBE_HPP
+        Maybe& operator=(const T& value)
+        {
+            maybe_ = true;
+            value_ = value;
+            return *this;
+        }
+
+        Maybe& operator=(T&& value)
+        {
+            maybe_ = true;
+            value_ = value;
+            return *this;
+        }
+    };
+}
+
+#endif // MAYBE_HPP

@@ -1,100 +1,109 @@
-#! /usr/bin/env python
+#!/usr/bin/python2.7
 
-import time
-from typing import Optional, Type
-
-import rosgraph
 import rospy
+import time
+from threading import Lock
+from sensor_msgs.msg import Joy
 
+class Listener:
+    def __init__(self, topic_name, topic_type, wait_for_data=False):
+        """
+        Listener is a wrapper around a subscriber where the callback simply records the latest msg.
 
-def wait_for(func, warn_after: Optional[int] = 10, name: Optional[str] = ""):
+        Listener does not consume the message 
+            (for consuming behavior, use the standard ros callback pattern)
+        Listener does not check timestamps of message headers
+
+        Parameters:
+            topic_name (str):      name of topic to subscribe to
+            topic_type (msg_type): type of message received on topic
+            wait_for_data (bool):  block constructor until a message has been received
+        """
+
+        self.data = None
+        self.lock = Lock()
+            
+        self.subscriber = rospy.Subscriber(topic_name, topic_type, self.callback)
+        self.get(wait_for_data)
+
+        
+    def callback(self, msg):
+        with self.lock:
+            self.data = msg
+
+    def get(self, block_until_data=True):
+        """
+        Returns the latest msg from the subscribed topic
+
+        Parameters:
+            block_until_data (bool): block if no message has been received yet. 
+                                     Guarantees a msg is returned (not None)
+        """
+        wait_for(lambda: not (block_until_data and self.data is None))
+            
+        with self.lock:
+            return self.data
+
+    
+def wait_for(func):
     """
     Waits for function evaluation to be true. Exits cleanly from ros.
 
     Introduces sleep delay, not recommended for time critical operations
     """
-
-    start_t = rospy.Time.now()
-
+    
     while not func() and not rospy.is_shutdown():
-        if warn_after is not None and rospy.Time.now() - start_t > rospy.Duration(secs=warn_after):
-            warning = f"still waiting after {warn_after}s"
-            if name:
-                warning += f" for {name}"
-            rospy.logwarn_throttle(5, warning)
         time.sleep(0.01)
 
-
-def joy_to_xbox(joy, xpad=True):
+        
+def joy_to_xbox(joy):
     """
     Transforms a joystick sensor_msg to a XBox controller for easier code readability
-
+    
     Parameters:
     joy (sensor_msgs/Joy): xbox msg
-    xpad (bool): True if using the default xpad driver, False if using xboxdrv
 
     Returns:
     xbox struct where fields are the button names
     """
-
     class Xbox_msg():
-        def __str__(self):
-            items = vars(self).items()
-            return "\n".join("%s: %s" % item for item in items)
-
+        pass
     x = Xbox_msg()
-    if xpad:
-        x.A, x.B, x.X, x.Y, x.LB, x.RB, \
-        x.back, x.start, x.power, \
+    x.A, x.B, x.X, x.Y, x.LB, x.RB, \
+        x.back, x.start, x.power,\
         x.stick_button_left, x.stick_button_right, \
         x.DL, x.DR, x.DU, x.DD = joy.buttons
-        x.LH, x.LV, x.LT, x.RH, x.RV, x.RT, x.DH, x.DV = joy.axes
-    else:
-        x.A, x.B, x.X, x.Y, x.LB, x.RB, \
-        x.back, x.start, x.power, \
-        x.stick_button_left, x.stick_button_right = joy.buttons
-        x.LH, x.LV, x.LT, x.RH, x.RV, x.RT, x.DH, x.DV = joy.axes
+    x.LH, x.LV, x.LT, x.RH, x.RV, x.RT, x.DH, x.DV = joy.axes
     return x
 
 
-def logfatal(exception_class, msg):
-    rospy.logfatal(msg)
-    raise exception_class(msg)
+class Xbox():
+    def __init__(self, joystick_topic="joy"):
+        self.xbox_listener = Listener(joystick_topic, Joy)
 
+    def get_buttons_state(self):
+        """
+        Returns an xbox struct of the last joystick message received
+        """
+        return joy_to_xbox(self.xbox_listener.get())
 
-def get_connected_publisher(topic_path: str, data_class: Type, *args, **kwargs):
-    pub = rospy.Publisher(topic_path, data_class, *args, **kwargs)
-    num_subs = len(_get_subscribers(topic_path))
-    for i in range(5):
-        num_cons = pub.get_num_connections()
-        if num_cons == num_subs:
-            return pub
-        time.sleep(0.05)
+    def get_button(self, button):
+        """
+        Return value of button or axis of the controller
+        0 or 1 for buttons
+        -1.0 to 1.0 (at most) for axes
+        """
+        return getattr(self.get_buttons_state(), button)
 
-    raise RuntimeError(f"failed to get publisher for {topic_path}")
+    def wait_for_button(self, button, message=True):
+        """
+        Waits for button press on xbox.
 
-
-def _get_subscribers(topic_path: str):
-    ros_master = rosgraph.Master('/rostopic')
-    topic_path = rosgraph.names.script_resolve_name('rostopic', topic_path)
-    state = ros_master.getSystemState()
-    subs = []
-    for sub in state[1]:
-        if sub[0] == topic_path:
-            subs.extend(sub[1])
-    return subs
-
-
-def try_to_connect(*publishers, raise_on_fail: bool = False):
-    for i in range(5):
-        connected = [p.get_num_connections() > 0 for p in publishers]
-        if all(connected):
-            return
-        time.sleep(0.05)
-
-    unconnected_pubs = [p.name for p in publishers if p.get_num_connections() == 0]
-    if len(unconnected_pubs) > 0:
-        msg = f"failed to connect publishers {','.join(unconnected_pubs)}"
-        if raise_on_fail:
-            raise RuntimeError(msg)
-        rospy.logwarn(msg)
+        Parameters:
+        button (str):   Name of xbox button. "A", "B", "X", ...
+        message (bool): log a message informing the user?
+        """
+        if message:
+            rospy.loginfo("Waiting for xbox button: " + button)
+            
+        wait_for(lambda: not self.get_button(button) == 0)

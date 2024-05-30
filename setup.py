@@ -1,4 +1,4 @@
-## ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
+#!/usr/bin/python2.7
 
 from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup

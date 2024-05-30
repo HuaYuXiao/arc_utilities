@@ -1,3 +1,5 @@
+#!/usr/bin/python2.7
+
 import numpy as np
 
 def ListPointsToNpArray(points, transform=None):

@@ -1,9 +1,13 @@
 <?xml version="1.0"?>
 <package>
   <name>arc_utilities</name>
-  <version>0.0.2</version>
-  <description>C++ and Python utilities used in lab projects</description>
-  <maintainer email="calder.pg@gmail.com">Calder Phillips-Grafflin</maintainer>
+  <version>1.0.0</version>
+  <description>
+    C++ and Python utilities used in lab projects
+  </description>
+
+  <maintainer email="12010508@mail.sustech.edu.cn">Eason Hua</maintainer>
+
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -11,19 +15,16 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>rosconsole</build_depend>
-  <build_depend>pybind11_catkin</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>eigen</build_depend>
-  <build_depend>zlib</build_depend>
+  <build_depend>octomap_ros</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
-  <run_depend>zlib</run_depend>
+  <run_depend>octomap_ros</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -8,5 +8,8 @@ tags
 # Compiled python files
 *.pyc
 
-cmake-build-debug/
-.idea/
+cmake-build-*
+build
+
+.idea
+.vscode
